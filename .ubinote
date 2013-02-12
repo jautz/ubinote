@@ -1,0 +1,36 @@
+#
+# Template for config file ".ubinote"
+#
+# * Depending on the existence of runtime environment variables put this file
+#   * either into $HOME
+#   * or one directory level below the $DOCUMENT_ROOT
+#   * or into the script's working directory (NOT RECOMMENDED for public use)
+#   Whereever you put it, make sure the file is readable for the webserver process
+#   but not accessible from the internet because it contains the DB credentials.
+#
+# * Adapt it to your needs
+#
+
+#####################
+# MANDATORY SETTINGS
+#####################
+
+# database settings
+db_host    = mysql.example.com
+db_name    = website
+db_user    = u12345
+db_pass    = p67890
+tbl_prefix = ubi_
+
+#####################
+# OPTIONAL SETTINGS
+#####################
+
+# the character set to be used for this web application
+charset = iso-8859-1
+
+# the style sheet for this web application
+css = http://www.jautz.org/style.css
+
+# sql command to retrieve the current date and time (vendor specific)
+sql_now = NOW()
