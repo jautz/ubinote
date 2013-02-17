@@ -259,7 +259,7 @@ sub edit_entry {
                 Note
             </td>
             <td>
-                <textarea name="$PARAM_TXT" cols="75" rows="15">$txt</textarea>
+                <textarea name="$PARAM_TXT" cols="100" rows="20">$txt</textarea>
             </td>
         </tr>
         <tr>
