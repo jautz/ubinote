@@ -92,7 +92,7 @@ my $dbh = DBI->connect('dbi:mysql:database='.$config->db_name().';host='.$config
 
 print_header($cgi_view);
 
-show_menu($cgi_view);
+show_menu($cgi_view, $cgi_category);
 
 # PROCESS ACTION
 if ($cgi_action eq $ACTION_SAVE) {
@@ -122,7 +122,10 @@ elsif ($cgi_view eq $VIEW_PRINT) {
     print_entry($cgi_id);
 }
 elsif ($cgi_view eq $VIEW_EDIT) {
-    edit_entry($cgi_id);
+    edit_entry({
+        edit_id => $cgi_id,
+        category => $cgi_category,
+    });
 }
 else {
     warn "Unknown view '$cgi_view'";
@@ -187,16 +190,21 @@ sub print_errors {
 
 sub show_menu {
     my $subname = (caller(0))[3];
-    die "$subname: wrong number of arguments" unless (@_ == 1);
-    my ($req_view) = @_;
+    die "$subname: wrong number of arguments" unless (@_ == 2);
+    my ($req_view, $req_cat) = @_;
 
     return if ($req_view eq $VIEW_PRINT); # suppress menu in print view
 
     my @items = ();
     foreach my $arr_ref (@{$MENU}) {
         my ($view, $label) = @{$arr_ref};
-        $label = uc($label) if ($view eq $req_view);
-        push @items, qq(<a href="$SCRIPT_NAME?$PARAM_VIEW=$view">$label</a>);
+        if ($view eq $req_view) {
+            push @items, uc($label);
+        }
+        else {
+            my $arg_category = (defined $req_cat ? "&$PARAM_CATEGORY=$req_cat" : '');
+            push @items, qq(<a href="$SCRIPT_NAME?$PARAM_VIEW=$view$arg_category">$label</a>);
+        }
     }
     print join(' | ', @items).qq(\n<hr/>\n);
 }
@@ -227,11 +235,19 @@ sub confirm_action {
 EOT
 }
 
+# edit_entry $args_hashref
+# args_hashref = {
+#       edit_id  => int,        # optional; use undef or 0 to create a new note
+#       category => int,        # optional; for new notes: preselect an item in the category picker;
+#                               # ignored for existing notes where this is read from the database
+# }
 sub edit_entry {
     my $subname = (caller(0))[3];
-    my $edit_id = shift || 0;
-    my $headline = 'New Entry';
-    my ($txt, $ed_cat_id) = (undef, 0);
+    my ($args) = @_;
+    my $edit_id = $args->{edit_id} || 0;
+    my $ed_cat_id = $args->{category} || 0;
+
+    my ($headline, $txt) = ('New Entry', '');
 
     if ($edit_id) {
         $headline = 'Edit Entry #'.$edit_id;
@@ -254,7 +270,6 @@ sub edit_entry {
         $categories .= qq(<option value="$cat_id"$selected>$cat_name</option>);
     }
 
-    $txt = '' unless (defined $txt);
     print <<EOT;
 <h2>$headline</h2>
 <form name="noteeditor" action="$SCRIPT_NAME" method="post">
