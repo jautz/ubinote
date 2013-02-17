@@ -156,8 +156,15 @@ sub print_header {
 <title>Ubiquitous Notebook</title>
 $css
 <meta http-equiv="Content-Type" content="text/html; charset=$charset" />
+<script type="text/javascript">
+function autofocus() {
+  if (document.noteeditor.$PARAM_TXT) {
+    document.noteeditor.$PARAM_TXT.focus();
+  }
+}
+</script>
 </head>
-<body>
+<body onload="autofocus()">
 <div${div_css}>
 EOT
 }
@@ -250,7 +257,7 @@ sub edit_entry {
     $txt = '' unless (defined $txt);
     print <<EOT;
 <h2>$headline</h2>
-<form action="$SCRIPT_NAME" method="post">
+<form name="noteeditor" action="$SCRIPT_NAME" method="post">
     <input type="hidden" name="$PARAM_ACTION" value="$ACTION_SAVE"/>
     <input type="hidden" name="$PARAM_ID" value="$edit_id"/>
     <table>
