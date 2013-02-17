@@ -274,7 +274,7 @@ sub edit_entry {
         </tr>
         <tr>
             <td>
-                <input type="submit" value="save"/>
+                <input type="submit" value="save" accesskey="s"/>
             </td>
             <td>
             </td>
