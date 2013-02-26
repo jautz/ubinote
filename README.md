@@ -18,4 +18,9 @@ turns URIs in the note's text into hyperlinks.
 * Follow the instructions in the example config file `.ubinote`.
 * Copy the index.cgi to an appropriate folder on your webserver. Feel free to
   rename it. I chose this name because it usually works as default page name.
-* I recommend to restrict access to this folder, e.g. .htaccess basic auth.
+
+## Security
+
+I _highly recommend_ that you restrict access to this application, e.g. by using a `.htaccess` file.
+It has been developed for a for a small group of trusted users.
+It is not meant to be used on the public internet unless you implement more security-related checks.
