@@ -318,7 +318,7 @@ sub show_notes {
     my ($args) = @_;
     die "missing note_id argument" unless (defined $args->{note_id});
 
-    print '<p>Category: '.(join('|', get_category_links())).'</p>';
+    print '<p>Category: '.(join(' | ', get_category_links())).'</p>';
 
     return unless (defined $args->{category});
 
