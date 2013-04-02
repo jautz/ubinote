@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-#
-# Title: Ubiquitous Notebook
-# Author: Joachim Jautz
-#
 use AppConfig;
 use CGI;
 use DBI;
@@ -33,6 +29,7 @@ my $config = AppConfig->new(
     # mandatory settings
     'db_host', 'db_name', 'db_user', 'db_pass', 'tbl_prefix',
     # optional settings
+    'app_name'=> { DEFAULT => 'Ubiquitous Notebook' },
     'charset' => { DEFAULT => 'iso-8859-1' },
     'css'     => { DEFAULT => 'http://www.jautz.org/style.css' },
     'sql_now' => { DEFAULT => 'NOW()' },
@@ -145,6 +142,10 @@ sub print_header {
     my $css = $config->css();
     my $charset = $config->charset();
 
+    # put a prefix in the title when editing to avoid closing these browser tabs hastily
+    my $title = $config->app_name();
+    $title = 'EDIT - '.$title if ($req_view eq $VIEW_EDIT);
+
     $css = qq(<link rel="stylesheet" type="text/css" href="$css" />);
     my $div_css = q( class="page");
     # suppress style sheet in print view
@@ -156,7 +157,7 @@ sub print_header {
          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
-<title>Ubiquitous Notebook</title>
+<title>$title</title>
 $css
 <meta http-equiv="Content-Type" content="text/html; charset=$charset" />
 <script type="text/javascript">
