@@ -31,7 +31,7 @@ my $config = AppConfig->new(
     # optional settings
     'app_name'=> { DEFAULT => 'Ubiquitous Notebook' },
     'charset' => { DEFAULT => 'iso-8859-1' },
-    'css'     => { DEFAULT => 'http://www.jautz.org/style.css' },
+    'css'     => { DEFAULT => '/style.css' },
     'sql_now' => { DEFAULT => 'NOW()' },
 );
 

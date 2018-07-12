@@ -30,7 +30,7 @@ tbl_prefix = ubi_
 charset = iso-8859-1
 
 # the style sheet for this web application
-css = http://www.jautz.org/style.css
+css = /style.css
 
 # sql command to retrieve the current date and time (vendor specific)
 sql_now = NOW()
