@@ -50,8 +50,8 @@ foreach my $setting ('db_host', 'db_name', 'db_user', 'db_pass', 'tbl_prefix') {
     }
 }
 
-my $STYLE_PADDING_LR = 'padding-left:8px;padding-right:8px;';
-my $STYLE_BGCOLOR_ODD_LINE = 'background-color:#AAAAAA;';
+my $STYLE_ALIGN_RIGHT = 'text-align:right';
+my $STYLE_BUTTON_SPACING = 'word-spacing:3em';
 
 my $ACTION_DELETE = 'delete';
 my $ACTION_SAVE = 'save';
@@ -63,11 +63,13 @@ my $PARAM_ID = 'id';
 my $PARAM_TXT = 'txt';
 my $PARAM_VIEW = 'view';
 
+my $VIEW_CATPICK = 'catpick';
 my $VIEW_EDIT = 'edit';
 my $VIEW_READ = 'read';
 my $VIEW_PRINT = 'print';
 
 my $MENU = [
+    [ $VIEW_CATPICK, '__CATEGORY__' ],
     [ $VIEW_READ, 'read' ],
     [ $VIEW_EDIT, 'write' ],
 ];
@@ -81,7 +83,7 @@ my $cgi_category  = $cgi->param($PARAM_CATEGORY);
 my $cgi_confirmed = $cgi->param($PARAM_CONFIRMED);
 my $cgi_id        = $cgi->param($PARAM_ID) || 0;
 my $cgi_txt       = $cgi->param($PARAM_TXT);
-my $cgi_view      = $cgi->param($PARAM_VIEW) || $VIEW_READ;
+my $cgi_view      = $cgi->param($PARAM_VIEW) || $VIEW_CATPICK;
 
 my $dbh = DBI->connect('dbi:mysql:database='.$config->db_name().';host='.$config->db_host(),
                        $config->db_user(), $config->db_pass(),
@@ -109,7 +111,10 @@ elsif ($cgi_action eq $ACTION_DELETE) {
 }
 
 # SHOW VIEW
-if ($cgi_view eq $VIEW_READ) {
+if ($cgi_view eq $VIEW_CATPICK) {
+    pick_category();
+}
+elsif ($cgi_view eq $VIEW_READ) {
     show_notes({
         note_id => $cgi_id,
         category => $cgi_category,
@@ -139,17 +144,20 @@ sub print_header {
     die "$subname: wrong number of arguments" unless (@_ == 1);
     my ($req_view) = @_;
 
-    my $css = $config->css();
     my $charset = $config->charset();
 
     # put a prefix in the title when editing to avoid closing these browser tabs hastily
     my $title = $config->app_name();
     $title = 'EDIT - '.$title if ($req_view eq $VIEW_EDIT);
 
-    $css = qq(<link rel="stylesheet" type="text/css" href="$css" />);
+    my $style = sprintf(
+        q(<link rel="stylesheet" type="text/css" media="all" href="%s" />),
+        $config->css()
+    );
     my $div_css = q( class="page");
-    # suppress style sheet in print view
-    $css = $div_css = '' if ($req_view eq $VIEW_PRINT);
+
+    # disable styles in print view
+    $style = $div_css = '' if ($req_view eq $VIEW_PRINT);
 
     print <<EOT;
 <!DOCTYPE html
@@ -158,8 +166,9 @@ sub print_header {
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
 <title>$title</title>
-$css
+$style
 <meta http-equiv="Content-Type" content="text/html; charset=$charset" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script type="text/javascript">
 function autofocus() {
   if (document.noteeditor.$PARAM_TXT) {
@@ -199,12 +208,20 @@ sub show_menu {
     my @items = ();
     foreach my $arr_ref (@{$MENU}) {
         my ($view, $label) = @{$arr_ref};
+        if ($label =~ m/^__([A-Z]+)__$/) {
+            $label = get_category_name($req_cat) if $1 eq 'CATEGORY';
+        }
         if ($view eq $req_view) {
             push @items, uc($label);
         }
         else {
-            my $arg_category = (defined $req_cat ? "&$PARAM_CATEGORY=$req_cat" : '');
-            push @items, qq(<a href="$SCRIPT_NAME?$PARAM_VIEW=$view$arg_category">$label</a>);
+            push @items, mkhref({
+                label => $label,
+                query => {
+                    $PARAM_VIEW => $view,
+                    $PARAM_CATEGORY => $req_cat,
+                },
+            });
         }
     }
     print join(' | ', @items).qq(\n<hr/>\n);
@@ -226,6 +243,7 @@ sub confirm_action {
     print <<EOT;
 <form action="$SCRIPT_NAME" method="post">
     <input type="hidden" name="$PARAM_CONFIRMED" value="1"/>
+    <input type="hidden" name="$PARAM_VIEW" value="$VIEW_READ"/>
     $params_html
     <p>
         <b>$message</b>&nbsp;&nbsp;
@@ -235,6 +253,14 @@ sub confirm_action {
 <hr/>
 EOT
 }
+
+
+sub pick_category {
+    foreach my $cat (get_category_links()) {
+        printf("<p>$cat</p>\n");
+    }
+}
+
 
 # edit_entry $args_hashref
 # args_hashref = {
@@ -276,33 +302,21 @@ sub edit_entry {
 <form name="noteeditor" action="$SCRIPT_NAME" method="post">
     <input type="hidden" name="$PARAM_ACTION" value="$ACTION_SAVE"/>
     <input type="hidden" name="$PARAM_ID" value="$edit_id"/>
-    <table>
-        <tr>
-            <td>
-                Note
-            </td>
-            <td>
-                <textarea name="$PARAM_TXT" cols="100" rows="20">$txt</textarea>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Category
-            </td>
-            <td>
-                <select name="$PARAM_CATEGORY" size="$category_count"/>
-                    $categories
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type="submit" value="save" accesskey="s"/>
-            </td>
-            <td>
-            </td>
-        </tr>
-    </table>
+    <input type="hidden" name="$PARAM_VIEW" value="$VIEW_READ"/>
+
+    <h3>Category</h3>
+    <select name="$PARAM_CATEGORY" size="$category_count"/>
+        $categories
+    </select>
+
+    <input type="submit" value="save"/>
+
+    <h3>Note</h3>
+    <textarea name="$PARAM_TXT" style="height:20em;width:100%">$txt</textarea>
+
+    <p>
+        <input type="submit" value="save" accesskey="s"/>
+    </p>
 </form>
 
 EOT
@@ -319,51 +333,50 @@ sub show_notes {
     my ($args) = @_;
     die "missing note_id argument" unless (defined $args->{note_id});
 
-    print '<p>Category: '.(join(' | ', get_category_links())).'</p>';
-
     return unless (defined $args->{category});
 
     my $result = get_notes($args);
 
-    my $lines = '';
-    my $line_count = 0;
+    my @paragraphs = ();
+    my $line_template = qq(<div class="note" style="%s">%s</div>\n);
     foreach my $row (@{$result}) {
-        my ($note_id, $txt, $lastchange, $category) = @{$row};
-        my $col_action =
-            qq( <a href="$SCRIPT_NAME?$PARAM_VIEW=$VIEW_EDIT&$PARAM_ID=$note_id">[edit]</a>).
-            qq( <a href="$SCRIPT_NAME?$PARAM_VIEW=$VIEW_PRINT&$PARAM_ID=$note_id">[print]</a>).
-            qq( <a href="$SCRIPT_NAME?$PARAM_ACTION=$ACTION_DELETE&$PARAM_ID=$note_id&$PARAM_CATEGORY=$args->{category}">[delete]</a>);
-        ++$line_count;
-        my $row_attribs = ($line_count % 2 == 1 ? qq(style="$STYLE_BGCOLOR_ODD_LINE") : '');
+        my ($note_id, $txt, $lastchange) = @{$row};
+        my $entry = '';
+        $entry .= sprintf($line_template, '', preprocess($txt));
 
-        # generate cells of table row
-        $lines .= "<tr $row_attribs>";
+        $entry .= sprintf($line_template, $STYLE_ALIGN_RIGHT, $lastchange);
 
-        my $note_txt = (defined $txt ? preprocess($txt) : '');
-
-
-        foreach my $col ($category, $note_txt, $lastchange, $col_action) {
-            $lines .= qq(<td style="$STYLE_PADDING_LR">$col</td>);
-        }
-        $lines .= "</tr>\n";
+        $entry .= sprintf($line_template,
+                          $STYLE_BUTTON_SPACING,
+                          join(' ',
+                              mkhref({
+                                  label => '[edit]',
+                                  query => {
+                                      $PARAM_VIEW => $VIEW_EDIT,
+                                      $PARAM_ID => $note_id,
+                                  },
+                              }),
+                              mkhref({
+                                  label => '[print]',
+                                  query => {
+                                      $PARAM_VIEW => $VIEW_PRINT,
+                                      $PARAM_ID => $note_id,
+                                  },
+                              }),
+                              mkhref({
+                                  label => '[delete]',
+                                  query => {
+                                      $PARAM_ACTION => $ACTION_DELETE,
+                                      $PARAM_VIEW => $VIEW_READ,
+                                      $PARAM_ID => $note_id,
+                                      $PARAM_CATEGORY => $args->{category},
+                                  },
+                              }),
+                          ));
+        push @paragraphs, "$entry\n";
     }
-
-    if ($lines) {
-        print <<EOT;
-<table>
-<tr>
-    <th style="${STYLE_PADDING_LR}text-align:left">Category</th>
-    <th style="${STYLE_PADDING_LR}text-align:left">Note</th>
-    <th style="${STYLE_PADDING_LR}text-align:left">Timestamp</th>
-    <th style="${STYLE_PADDING_LR}text-align:left">Action</th>
-</tr>
-$lines
-</table>
-EOT
-    }
-    else {
-        print "<p>Nothing found.</p>\n";
-    }
+    push @paragraphs, 'Nothing found.' unless @paragraphs;
+    print join("<p>&nbsp;</p>\n\n", @paragraphs);
 }
 
 
@@ -377,11 +390,7 @@ sub print_entry {
     warn "note#$note_id not found." unless (@{$result} > 0);
 
     # note text is expected in the result set's 1st row, 2nd field
-    my $note_txt = $result->[0]->[1];
-
-    $note_txt = (defined $note_txt ? preprocess($note_txt) : '');
-
-    print $note_txt;
+    print preprocess($result->[0]->[1]);
 }
 
 
@@ -445,6 +454,16 @@ sub delete_entry {
     return ($affected == 1);
 }
 
+sub get_category_name {
+    my $cat_id = shift // 0;
+    my @row = $dbh->selectrow_array(
+        'SELECT name'.
+        ' FROM '.$config->tbl_prefix().'category'.
+        " WHERE category_id = $cat_id"
+    );
+    return shift(@row) // 'ALL';
+}
+
 sub get_categories {
     return $dbh->selectall_arrayref(
         'SELECT category_id, name'.
@@ -458,7 +477,13 @@ sub get_category_links {
 
     foreach my $category ([0, 'ALL'], @{&get_categories}) {
         my ($cat_id, $cat_name) = @{$category};
-        push @result, qq(<a href="$SCRIPT_NAME?$PARAM_VIEW=$VIEW_READ&$PARAM_CATEGORY=$cat_id">$cat_name</a>);
+        push @result, mkhref({
+            label => $cat_name,
+            query => {
+                $PARAM_VIEW => $VIEW_READ,
+                $PARAM_CATEGORY => $cat_id,
+            },
+        });
     }
 
     return @result;
@@ -491,11 +516,10 @@ sub read_note_by_id {
     my ($note_id) = @_;
 
     return $dbh->selectall_arrayref(sprintf(
-        'SELECT n.note_id, n.txt, n.lastchange, c.name'.
-        ' FROM %snotebook n, %scategory c'.
-        ' WHERE n.category_id = c.category_id'.
-        ' AND n.note_id = %d',
-        $config->tbl_prefix(), $config->tbl_prefix(), $note_id));
+        'SELECT n.note_id, n.txt, n.lastchange'.
+        ' FROM %snotebook n'.
+        ' WHERE n.note_id = %d',
+        $config->tbl_prefix(), $note_id));
 }
 
 sub read_notes_by_category {
@@ -504,27 +528,26 @@ sub read_notes_by_category {
     my ($category_id) = @_;
 
     return $dbh->selectall_arrayref(sprintf(
-        'SELECT n.note_id, n.txt, n.lastchange, c.name'.
-        ' FROM %snotebook n, %scategory c'.
-        ' WHERE n.category_id = c.category_id'.
-        ' AND n.category_id = %d'.
+        'SELECT n.note_id, n.txt, n.lastchange'.
+        ' FROM %snotebook n'.
+        ' WHERE n.category_id = %d'.
         ' ORDER BY n.lastchange DESC, n.note_id DESC',
-        $config->tbl_prefix(), $config->tbl_prefix(), $category_id));
+        $config->tbl_prefix(), $category_id));
 }
 
 sub read_all_notes {
     return $dbh->selectall_arrayref(sprintf(
-        'SELECT n.note_id, n.txt, n.lastchange, c.name'.
-        ' FROM %snotebook n, %scategory c'.
-        ' WHERE n.category_id = c.category_id'.
+        'SELECT n.note_id, n.txt, n.lastchange'.
+        ' FROM %snotebook n'.
         ' ORDER BY n.lastchange DESC, n.note_id DESC',
-        $config->tbl_prefix(), $config->tbl_prefix()));
+        $config->tbl_prefix()));
 }
 
 sub preprocess {
     my $subname = (caller(0))[3];
     die "$subname: wrong number of arguments" unless (@_ == 1);
     my ($txt) = @_;
+    die "$subname: argument is undef" unless defined $txt;
 
     my @lines = split /\R/, $txt;
 
@@ -593,4 +616,21 @@ sub get_bullet_symbol {
     };
 
     return $bullets_by_depth->{$depth} || '&bull;';
+}
+
+sub mkhref {
+    my $subname = (caller(0))[3];
+    die "$subname: wrong number of arguments" unless (@_ == 1);
+    my ($args) = @_;
+    my $label = $args->{label} // '?label?';
+    my $path = $args->{path} // $SCRIPT_NAME;
+    my @qp = ();
+    if (exists $args->{query}) {
+        foreach my $key (sort keys %{$args->{query}}) {
+            my $val = $args->{query}->{$key};
+            push @qp, sprintf("%s=%s", $key, $val) if defined $val;
+        }
+    }
+    my $querystr = @qp ? '?'.join('&', @qp) : '';
+    return qq(<a href="$path$querystr">$label</a>);
 }

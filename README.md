@@ -16,6 +16,7 @@ turns URIs in the note's text into hyperlinks.
 * Use mkschema.sh to generate the sql statements to create the tables.
 * Execute the sql statements from your DB admin console.
 * Follow the instructions in the example config file `.ubinote`.
+* Specify the CSS file to use in `.ubinote` (see `style.css` for an example).
 * Copy the index.cgi to an appropriate folder on your webserver. Feel free to
   rename it. I chose this name because it usually works as default page name.
 
