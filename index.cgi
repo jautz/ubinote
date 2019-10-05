@@ -592,8 +592,8 @@ sub preprocess_markup {
         # create links to amazon for ASIN key/value pairs
         $line =~ s|\bASIN[:=\s]\s*(\w+)\b|<a href="http://www.amazon.de/gp/product/$1">Amazon#$1</a>|g;
 
-        # asterisks at the beginning of a line are replaced by indentation and bullet symbols
-        if ($line =~ m|^(\*+)|) {
+        # asterisks or dashes at the beginning become bullet lists
+        if ($line =~ m|^([*-]+)|) {
             my $depth = length($1);
             my $indent = '';
             for (my $count = 1; $count < $depth; ++$count) {
