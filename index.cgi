@@ -560,8 +560,23 @@ sub preprocess {
 
     preprocess_hyperlinks(\@lines, $args->{url_ellipsis});
     preprocess_markup(\@lines);
+    preprocess_headline(\@lines);
 
     return join("<br/>\n", @lines);
+}
+
+# Format the first line as headline unless it contains HTML tags or entities
+sub preprocess_headline {
+    my $subname = (caller(0))[3];
+    die "$subname: wrong number of arguments" unless (@_ == 1);
+    my ($lines) = @_;
+
+    foreach my $line (@{$lines}) {
+        unless ($line =~ m/[<>]|\&\w+;/) {
+            $line = "<b>$line</b>";
+        }
+        last;  # headline processed, skip the rest
+    }
 }
 
 # Finds urls and creates html links.
