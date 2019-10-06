@@ -342,7 +342,12 @@ sub show_notes {
     foreach my $row (@{$result}) {
         my ($note_id, $txt, $lastchange) = @{$row};
         my $entry = '';
-        $entry .= sprintf($line_template, '', preprocess($txt));
+        $entry .= sprintf($line_template,
+                          '',
+                          preprocess({
+                              content => $txt,
+                              url_ellipsis => 1,
+                          }));
 
         $entry .= sprintf($line_template, $STYLE_ALIGN_RIGHT, $lastchange);
 
@@ -390,7 +395,9 @@ sub print_entry {
     warn "note#$note_id not found." unless (@{$result} > 0);
 
     # note text is expected in the result set's 1st row, 2nd field
-    print preprocess($result->[0]->[1]);
+    print preprocess({
+        content => $result->[0]->[1],
+    });
 }
 
 
@@ -546,12 +553,12 @@ sub read_all_notes {
 sub preprocess {
     my $subname = (caller(0))[3];
     die "$subname: wrong number of arguments" unless (@_ == 1);
-    my ($txt) = @_;
-    die "$subname: argument is undef" unless defined $txt;
+    my ($args) = @_;
+    die "missing content in args" unless (defined $args->{content});
 
-    my @lines = split /\R/, $txt;
+    my @lines = split /\R/, $args->{content};
 
-    preprocess_hyperlinks(\@lines);
+    preprocess_hyperlinks(\@lines, $args->{url_ellipsis});
     preprocess_markup(\@lines);
 
     return join("<br/>\n", @lines);
@@ -560,13 +567,15 @@ sub preprocess {
 # Finds urls and creates html links.
 sub preprocess_hyperlinks {
     my $subname = (caller(0))[3];
-    die "$subname: wrong number of arguments" unless (@_ == 1);
-    my ($lines) = @_;
+    die "$subname: wrong number of arguments" unless (@_ == 2);
+    my ($lines, $url_ellipsis) = @_;
 
     foreach my $line (@{$lines}) {
         while ($line =~ m{(^|\s)(([a-z]+://[^/\s]+/?)(\S*))}) {
             my ($whitespace, $url, $location, $path) = ($1, $2, $3, $4);
-            my $display_url = $location.($path ? '...' : '');
+            my $display_url = $url_ellipsis
+                              ? $location.($path ? '&hellip;' : '')
+                              : $url;
             $line =
                 substr($line, 0, $-[0]).
                 ($whitespace || '').
