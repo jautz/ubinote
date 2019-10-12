@@ -656,5 +656,12 @@ sub mkhref {
         }
     }
     my $querystr = @qp ? '?'.join('&', @qp) : '';
-    return qq(<a href="$path$querystr">$label</a>);
+    my @attributes = (qq(href="$path$querystr"));
+    if (exists $args->{attr}) {
+        foreach my $key (sort keys %{$args->{attr}}) {
+            push @attributes, sprintf('%s="%s"', $key, $args->{attr}->{$key});
+        }
+    }
+    return sprintf(qq(<a %s>$label</a>),
+                   join(' ', @attributes));
 }
