@@ -384,6 +384,7 @@ sub show_notes {
                                   query => {
                                       $PARAM_VIEW => $VIEW_EDIT,
                                       $PARAM_ID => $note_id,
+                                      $PARAM_CATEGORY => $args->{category},
                                   },
                               }),
                           ));
