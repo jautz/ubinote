@@ -17,6 +17,29 @@ a:visited { color:#990000; text-decoration: none; }
 a:hover   { color:#990000; text-decoration: underline; }
 a:active  { color:#990000; text-decoration: none; }
 
+a.button {
+  border-width:1px;
+  border-style:solid;
+  border-color:black;
+  padding-left:2em;
+  padding-right:2em;
+}
+
+a.edit {
+  background-color:#009900;
+  color:#FFFFFF;
+}
+
+a.delete {
+  background-color:#990000;
+  color:#FFFFFF;
+}
+
+a.print {
+  background-color:#FFFFFF;
+  color:#000000;
+}
+
 div.page {
   background-color:#BBBBBB;
   padding:1em;
@@ -25,5 +48,7 @@ div.page {
 div.note {
   background-color:#AAAAAA;
   padding:1ex;
+  margin-top:0.5ex;
+  margin-bottom:0.5ex;
   max-width:60em;
 }

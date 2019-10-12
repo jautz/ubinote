@@ -51,7 +51,7 @@ foreach my $setting ('db_host', 'db_name', 'db_user', 'db_pass', 'tbl_prefix') {
 }
 
 my $STYLE_ALIGN_RIGHT = 'text-align:right';
-my $STYLE_BUTTON_SPACING = 'word-spacing:3em';
+my $STYLE_BUTTON_SPACING = 'word-spacing:2em';
 
 my $ACTION_DELETE = 'delete';
 my $ACTION_SAVE = 'save';
@@ -224,7 +224,7 @@ sub show_menu {
             });
         }
     }
-    print join(' | ', @items).qq(\n<hr/>\n);
+    print join(' | ', @items).qq(\n<hr/>\n\n);
 }
 
 sub confirm_action {
@@ -332,44 +332,33 @@ sub show_notes {
     my $subname = (caller(0))[3];
     my ($args) = @_;
     die "missing note_id argument" unless (defined $args->{note_id});
-
     return unless (defined $args->{category});
 
     my $result = get_notes($args);
-
-    my @paragraphs = ();
-    my $line_template = qq(<div class="note" style="%s">%s</div>\n);
+    my @notes = ();
+    my $paragraph_template = qq(<p style="%s">\n%s\n</p>\n);
     foreach my $row (@{$result}) {
         my ($note_id, $txt, $lastchange) = @{$row};
-        my $entry = '';
-        $entry .= sprintf($line_template,
+        my @ps = ();
+        push @ps, sprintf($paragraph_template,
                           '',
                           preprocess({
                               content => $txt,
                               url_ellipsis => 1,
                           }));
 
-        $entry .= sprintf($line_template, $STYLE_ALIGN_RIGHT, $lastchange);
+        push @ps, sprintf($paragraph_template,
+                          $STYLE_ALIGN_RIGHT,
+                          $lastchange);
 
-        $entry .= sprintf($line_template,
+        push @ps, sprintf($paragraph_template,
                           $STYLE_BUTTON_SPACING,
                           join(' ',
                               mkhref({
-                                  label => '[edit]',
-                                  query => {
-                                      $PARAM_VIEW => $VIEW_EDIT,
-                                      $PARAM_ID => $note_id,
+                                  label => 'delete',
+                                  attr => {
+                                      class => 'button delete',
                                   },
-                              }),
-                              mkhref({
-                                  label => '[print]',
-                                  query => {
-                                      $PARAM_VIEW => $VIEW_PRINT,
-                                      $PARAM_ID => $note_id,
-                                  },
-                              }),
-                              mkhref({
-                                  label => '[delete]',
                                   query => {
                                       $PARAM_ACTION => $ACTION_DELETE,
                                       $PARAM_VIEW => $VIEW_READ,
@@ -377,11 +366,32 @@ sub show_notes {
                                       $PARAM_CATEGORY => $args->{category},
                                   },
                               }),
+                              mkhref({
+                                  label => 'print',
+                                  attr => {
+                                      class => 'button print',
+                                  },
+                                  query => {
+                                      $PARAM_VIEW => $VIEW_PRINT,
+                                      $PARAM_ID => $note_id,
+                                  },
+                              }),
+                              mkhref({
+                                  label => 'edit',
+                                  attr => {
+                                      class => 'button edit',
+                                  },
+                                  query => {
+                                      $PARAM_VIEW => $VIEW_EDIT,
+                                      $PARAM_ID => $note_id,
+                                  },
+                              }),
                           ));
-        push @paragraphs, "$entry\n";
+        push @notes,
+             sprintf(qq(<div class="note">\n%s</div>\n), join('', @ps));
     }
-    push @paragraphs, 'Nothing found.' unless @paragraphs;
-    print join("<p>&nbsp;</p>\n\n", @paragraphs);
+    push @notes, 'Nothing found.' unless @notes;
+    print join("\n", @notes);
 }
 
 
