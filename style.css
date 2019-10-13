@@ -18,26 +18,25 @@ a:hover   { color:#990000; text-decoration: underline; }
 a:active  { color:#990000; text-decoration: none; }
 
 a.button {
-  border-width:1px;
+  color:#000000;
+  border-width:2px;
   border-style:solid;
-  border-color:black;
   padding-left:2em;
   padding-right:2em;
+  padding-top:0.25ex;
+  padding-bottom:0.25ex;
 }
 
 a.edit {
-  background-color:#009900;
-  color:#FFFFFF;
+  border-color:#006600;
 }
 
 a.delete {
-  background-color:#990000;
-  color:#FFFFFF;
+  border-color:#990000;
 }
 
 a.print {
-  background-color:#FFFFFF;
-  color:#000000;
+  border-color:#CCCCCC;
 }
 
 div.page {
