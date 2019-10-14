@@ -51,7 +51,7 @@ foreach my $setting ('db_host', 'db_name', 'db_user', 'db_pass', 'tbl_prefix') {
 }
 
 my $STYLE_ALIGN_RIGHT = 'text-align:right';
-my $STYLE_BUTTON_SPACING = 'word-spacing:2em';
+my $STYLE_BUTTON_SPACING = 'word-spacing:2ex';
 
 my $ACTION_DELETE = 'delete';
 my $ACTION_SAVE = 'save';

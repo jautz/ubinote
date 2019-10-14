@@ -21,8 +21,8 @@ a.button {
   color:#000000;
   border-width:2px;
   border-style:solid;
-  padding-left:2em;
-  padding-right:2em;
+  padding-left:2ex;
+  padding-right:2ex;
   padding-top:0.25ex;
   padding-bottom:0.25ex;
 }
