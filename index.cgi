@@ -305,7 +305,7 @@ sub edit_entry {
     <input type="hidden" name="$PARAM_VIEW" value="$VIEW_READ"/>
 
     <h3>Category</h3>
-    <select name="$PARAM_CATEGORY" size="$category_count"/>
+    <select name="$PARAM_CATEGORY">
         $categories
     </select>
 
