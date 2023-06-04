@@ -645,12 +645,11 @@ sub get_bullet_symbol {
     my ($depth) = @_;
 
     my $bullets_by_depth = {
-            '1' => '&bull;',
-            '2' => '&diams;',
-            '3' => '&loz;',
+            '1' => '&#x2022;',  # "bullet" aka "&bull;"
+            '2' => '&#x25E6;',  # "white bullet"
     };
 
-    return $bullets_by_depth->{$depth} || '&bull;';
+    return $bullets_by_depth->{$depth} || '&#xB7;';  # aka "&middot;" actually means "logical and"
 }
 
 sub mkhref {
