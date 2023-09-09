@@ -1,19 +1,19 @@
-create table tblprefix_category (
-    category_id         integer         auto_increment primary key,
-    name                varchar(25)     not null
+CREATE TABLE tblprefix_category (
+    category_id         integer         AUTO_INCREMENT PRIMARY KEY,
+    name                varchar(25)     NOT NULL
 ) ENGINE=InnoDB;
 
-insert into tblprefix_category (name) values ('Other');
-insert into tblprefix_category (name) values ('ToDo');
-insert into tblprefix_category (name) values ('Work');
-insert into tblprefix_category (name) values ('Software Development');
-insert into tblprefix_category (name) values ('System Administration');
-insert into tblprefix_category (name) values ('Fun and Games');
+INSERT INTO tblprefix_category (name) VALUES ('Other');
+INSERT INTO tblprefix_category (name) VALUES ('ToDo');
+INSERT INTO tblprefix_category (name) VALUES ('Work');
+INSERT INTO tblprefix_category (name) VALUES ('Software Development');
+INSERT INTO tblprefix_category (name) VALUES ('System Administration');
+INSERT INTO tblprefix_category (name) VALUES ('Fun and Games');
 
-create table tblprefix_notebook (
-    note_id             integer         auto_increment primary key,
-    category_id         integer         not null,
-    txt                 text            not null,
-    lastchange          datetime        not null,
-    foreign key fk_notebook_category (category_id) references tblprefix_category (category_id)
+CREATE TABLE tblprefix_notebook (
+    note_id             integer         AUTO_INCREMENT PRIMARY KEY,
+    category_id         integer         NOT NULL,
+    txt                 text            NOT NULL,
+    lastchange          datetime        NOT NULL,
+    FOREIGN KEY fk_notebook_category (category_id) REFERENCES tblprefix_category (category_id)
 ) ENGINE=InnoDB;
