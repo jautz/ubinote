@@ -26,9 +26,6 @@ tbl_prefix = ubi_
 # OPTIONAL SETTINGS
 #####################
 
-# the character set to be used for this web application
-charset = iso-8859-1
-
 # the style sheet for this web application
 css = /style.css
 

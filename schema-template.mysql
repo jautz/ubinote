@@ -1,7 +1,7 @@
 CREATE TABLE tblprefix_category (
     category_id         integer         AUTO_INCREMENT PRIMARY KEY,
     name                varchar(25)     NOT NULL
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO tblprefix_category (name) VALUES ('Other');
 INSERT INTO tblprefix_category (name) VALUES ('ToDo');
@@ -16,4 +16,4 @@ CREATE TABLE tblprefix_notebook (
     txt                 text            NOT NULL,
     lastchange          datetime        NOT NULL,
     FOREIGN KEY fk_notebook_category (category_id) REFERENCES tblprefix_category (category_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

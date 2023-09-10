@@ -2,10 +2,13 @@
 use AppConfig;
 use CGI;
 use DBI;
+use feature 'unicode_strings';
 use strict;
 use warnings;
 
-print "Content-type: text/html\r\n\r\n";
+binmode(STDOUT, ':encoding(UTF-8)');
+
+print "Content-type: text/html; charset=UTF-8\r\n\r\n";
 
 $SIG{'__DIE__'} = sub {
     print 'FATAL ERROR: '.$_[0]."\n";
@@ -30,7 +33,6 @@ my $config = AppConfig->new(
     'db_host', 'db_name', 'db_user', 'db_pass', 'tbl_prefix',
     # optional settings
     'app_name'=> { DEFAULT => 'Ubiquitous Notebook' },
-    'charset' => { DEFAULT => 'iso-8859-1' },
     'css'     => { DEFAULT => '/style.css' },
     'sql_now' => { DEFAULT => 'NOW()' },
 );
@@ -87,7 +89,12 @@ my $cgi_view      = $cgi->param($PARAM_VIEW) || $VIEW_CATPICK;
 
 my $dbh = DBI->connect('dbi:mysql:database='.$config->db_name().';host='.$config->db_host(),
                        $config->db_user(), $config->db_pass(),
-                       { 'PrintError' => 0, 'RaiseError' => 1 });
+                       {
+                           'AutoCommit' => 1,
+                           'PrintError' => 0,
+                           'RaiseError' => 1,
+                           'mysql_enable_utf8' => 1,
+                       });
 
 print_header($cgi_view);
 
@@ -144,8 +151,6 @@ sub print_header {
     die "$subname: wrong number of arguments" unless (@_ == 1);
     my ($req_view) = @_;
 
-    my $charset = $config->charset();
-
     # put a prefix in the title when editing to avoid closing these browser tabs hastily
     my $title = $config->app_name();
     $title = 'EDIT - '.$title if ($req_view eq $VIEW_EDIT);
@@ -160,14 +165,12 @@ sub print_header {
     $style = $div_css = '' if ($req_view eq $VIEW_PRINT);
 
     print <<EOT;
-<!DOCTYPE html
-        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
 <title>$title</title>
 $style
-<meta http-equiv="Content-Type" content="text/html; charset=$charset" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script type="text/javascript">
 function autofocus() {
