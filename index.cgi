@@ -172,15 +172,8 @@ sub print_header {
 $style
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script type="text/javascript">
-function autofocus() {
-  if (document.noteeditor.$PARAM_TXT) {
-    document.noteeditor.$PARAM_TXT.focus();
-  }
-}
-</script>
 </head>
-<body onload="autofocus()">
+<body>
 <div${div_css}>
 EOT
 }
@@ -315,7 +308,7 @@ sub edit_entry {
     <input type="submit" value="save"/>
 
     <h3>Note</h3>
-    <textarea name="$PARAM_TXT" style="height:20em;width:100%">$txt</textarea>
+    <textarea name="$PARAM_TXT" autofocus style="height:20em;width:100%">$txt</textarea>
 
     <p>
         <input type="submit" value="save" accesskey="s"/>
