@@ -336,12 +336,7 @@ sub show_notes {
     foreach my $row (@{$result}) {
         my ($note_id, $txt, $lastchange) = @{$row};
         my @ps = ();
-        push @ps, sprintf($paragraph_template,
-                          '',
-                          preprocess({
-                              content => $txt,
-                              url_ellipsis => 1,
-                          }));
+        push @ps, preprocess({ content => $txt, url_ellipsis => 1, });
 
         push @ps, sprintf($paragraph_template,
                           $STYLE_ALIGN_RIGHT,
@@ -569,7 +564,26 @@ sub preprocess {
     preprocess_markup(\@lines);
     preprocess_headline(\@lines);
 
-    return join("<br/>\n", @lines);
+    return join_breaks(\@lines);
+}
+
+# Join lines into string with newline chars and HTML breaks as needed
+sub join_breaks {
+    my $subname = (caller(0))[3];
+    die "$subname: wrong number of arguments" unless (@_ == 1);
+    my ($lines) = @_;
+    my $str = '';
+    my $verbatim = 0;
+
+    foreach my $line (@{$lines}) {
+        $str .= $line;
+        $verbatim = 1 if not $verbatim and $line eq '<pre>';
+        $str .= '<br/>' unless $verbatim;
+        $verbatim = 0 if $verbatim and $line eq '</pre>';
+        $str .= "\n";
+    }
+
+    return $str;
 }
 
 # Format the first line as headline unless it contains HTML tags or entities
